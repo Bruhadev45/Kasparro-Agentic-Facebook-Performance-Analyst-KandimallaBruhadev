@@ -1,0 +1,85 @@
+{
+  "recommendations": [
+    {
+      "campaign_name": "Men Bold Colors Drop",
+      "current_issue": "Low CTR and ROAS due to generic messaging and lack of differentiation.",
+      "creative_variations": [
+        {
+          "variant_id": "V1",
+          "creative_type": "UGC",
+          "headline": "Real Men, Real Comfort",
+          "message": "Discover why men love our breathable athletic briefs. Endorsed by real customers for ultimate comfort and style.",
+          "cta": "Shop Now",
+          "rationale": "UGC has shown high ROAS. Leveraging real customer testimonials can enhance trust and engagement.",
+          "testing_priority": "high",
+          "expected_improvement": "CTR: +15%, ROAS: +20%",
+          "inspired_by": "Doctors recommend breathable cotton \u2014 meet our men athletic briefs."
+        },
+        {
+          "variant_id": "V2",
+          "creative_type": "Carousel",
+          "headline": "Stay Cool, Stay Confident",
+          "message": "Explore our range of cooling mesh briefs. Perfect for workouts and everyday wear.",
+          "cta": "Explore Collection",
+          "rationale": "Carousel format allows showcasing multiple product benefits and styles, increasing engagement.",
+          "testing_priority": "medium",
+          "expected_improvement": "CTR: +10%, ROAS: +15%",
+          "inspired_by": "Breathable bamboo that moves with you \u2014 limited offer on men inner vests."
+        }
+      ],
+      "audience_considerations": "Target active men aged 18-35 interested in fitness and comfort.",
+      "estimated_confidence": 0.85
+    },
+    {
+      "campaign_name": "women Summer Invisible",
+      "current_issue": "Messaging lacks urgency and personalization, leading to lower engagement.",
+      "creative_variations": [
+        {
+          "variant_id": "V1",
+          "creative_type": "Image",
+          "headline": "Feel the Freedom",
+          "message": "Experience seamless comfort with our wire-free bras. Limited time offer!",
+          "cta": "Get Yours Today",
+          "rationale": "Creating urgency with a limited-time offer can increase CTR and ROAS.",
+          "testing_priority": "high",
+          "expected_improvement": "CTR: +12%, ROAS: +18%",
+          "inspired_by": "Breathable cotton that moves with you \u2014 limited offer on men athletic briefs."
+        },
+        {
+          "variant_id": "V2",
+          "creative_type": "Video",
+          "headline": "Invisible Comfort, Visible Confidence",
+          "message": "Watch how our seamless panties transform your everyday comfort. Perfect for any outfit.",
+          "cta": "Watch Now",
+          "rationale": "Video format can effectively demonstrate product benefits and increase engagement.",
+          "testing_priority": "medium",
+          "expected_improvement": "CTR: +8%, ROAS: +12%",
+          "inspired_by": "Doctors recommend breathable organic cotton \u2014 meet our men athletic briefs."
+        }
+      ],
+      "audience_considerations": "Focus on women aged 25-45 seeking comfort and style in everyday wear.",
+      "estimated_confidence": 0.8
+    }
+  ],
+  "creative_patterns": {
+    "winning_themes": [
+      "Breathable comfort",
+      "Real customer endorsements"
+    ],
+    "effective_hooks": [
+      "Limited time offer",
+      "Real customer testimonials"
+    ],
+    "best_ctas": [
+      "Shop Now",
+      "Explore Collection"
+    ],
+    "avoid": [
+      "Generic claims without proof",
+      "Lack of urgency"
+    ]
+  },
+  "testing_strategy": "Implement A/B testing with a control group using current creatives and test groups using new variations to measure CTR and ROAS improvements.",
+  "total_recommendations": 2,
+  "generated_at": "2025-11-26T09:28:07.280625"
+}

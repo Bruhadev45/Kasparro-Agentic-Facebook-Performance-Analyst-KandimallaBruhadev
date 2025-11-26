@@ -1,0 +1,144 @@
+{
+  "query": "Quick test query",
+  "hypotheses": [
+    {
+      "hypothesis_id": "H1",
+      "title": "UGC and Image Creatives Drive Higher ROAS",
+      "description": "User-Generated Content (UGC) and Image creatives have the highest ROAS among all creative types, suggesting they are more effective in engaging the audience and driving revenue.",
+      "supporting_evidence": [
+        "UGC has a ROAS of 10.15, the highest among all creative types.",
+        "Image creatives have a ROAS of 10.12, closely following UGC."
+      ],
+      "potential_causes": [
+        "UGC and Image creatives may resonate better with the target audience.",
+        "These creatives could be more visually appealing or relatable, leading to higher engagement."
+      ],
+      "affected_segments": [
+        "Creative Type Performance"
+      ],
+      "confidence": 0.9,
+      "testable": true,
+      "validation_approach": "Conduct A/B testing comparing UGC and Image creatives against other types to measure differences in ROAS."
+    },
+    {
+      "hypothesis_id": "H2",
+      "title": "High ROAS in Top Campaigns Due to Effective Targeting",
+      "description": "Top campaigns achieve high ROAS with relatively low spend, indicating that they are effectively targeting the right audience segments.",
+      "supporting_evidence": [
+        "MEN PREMIUM -ODAL has a ROAS of 89.33 with a spend of only 69.39.",
+        "Men | Athlei ure Cooling has a ROAS of 85.33 with a spend of 159.19."
+      ],
+      "potential_causes": [
+        "Precise audience targeting leading to higher conversion rates.",
+        "Optimized ad delivery to high-intent users."
+      ],
+      "affected_segments": [
+        "Top Campaigns by ROAS"
+      ],
+      "confidence": 0.85,
+      "testable": true,
+      "validation_approach": "Analyze audience targeting settings and compare with lower-performing campaigns to identify differences."
+    },
+    {
+      "hypothesis_id": "H3",
+      "title": "Low ROAS in Bottom Campaigns Due to Ineffective Targeting",
+      "description": "Bottom campaigns have low ROAS, potentially due to ineffective audience targeting or creative strategies that do not resonate with the audience.",
+      "supporting_evidence": [
+        "Men Bold Colors Dr p has a ROAS of 0.24 with a spend of 316.29.",
+        "MEN COMFORTMA LAUNCH has a ROAS of 0.22 with a spend of 784.31."
+      ],
+      "potential_causes": [
+        "Poor audience targeting leading to low engagement.",
+        "Creative content may not be appealing or relevant to the audience."
+      ],
+      "affected_segments": [
+        "Bottom Campaigns by ROAS"
+      ],
+      "confidence": 0.8,
+      "testable": true,
+      "validation_approach": "Review targeting parameters and creative content for these campaigns and test alternative strategies."
+    }
+  ],
+  "evaluation": {
+    "evaluations": [
+      {
+        "hypothesis_id": "H1",
+        "validation_status": "confirmed",
+        "confidence_score": 0.9,
+        "evidence_summary": {
+          "supporting": [
+            "UGC has the highest ROAS of 10.15 among all creative types.",
+            "Image creatives have a ROAS of 10.12, closely following UGC."
+          ],
+          "contradicting": [],
+          "missing": [
+            "Longitudinal data to confirm consistency over time."
+          ]
+        },
+        "statistical_measures": {
+          "metric_change_pct": 16.9,
+          "sample_size": 4500,
+          "effect_magnitude": "large"
+        },
+        "reasoning": "The data shows that UGC and Image creatives have the highest ROAS, significantly above the overall average ROAS of 5.83. This suggests a strong effect of these creative types on ROAS.",
+        "reliability": "high"
+      },
+      {
+        "hypothesis_id": "H2",
+        "validation_status": "partially_confirmed",
+        "confidence_score": 0.75,
+        "evidence_summary": {
+          "supporting": [
+            "MEN PREMIUM -ODAL has a ROAS of 89.33 with a low spend of 69.39.",
+            "Men | Athlei ure Cooling has a ROAS of 85.33 with a spend of 159.19."
+          ],
+          "contradicting": [],
+          "missing": [
+            "Detailed targeting criteria and audience data."
+          ]
+        },
+        "statistical_measures": {
+          "metric_change_pct": 1432.1,
+          "sample_size": 3,
+          "effect_magnitude": "large"
+        },
+        "reasoning": "The top campaigns have exceptionally high ROAS with relatively low spend, suggesting effective targeting. However, without detailed targeting data, the conclusion remains partially speculative.",
+        "reliability": "medium"
+      },
+      {
+        "hypothesis_id": "H3",
+        "validation_status": "confirmed",
+        "confidence_score": 0.8,
+        "evidence_summary": {
+          "supporting": [
+            "Men Bold Colors Dr p has a ROAS of 0.24 with a spend of 316.29.",
+            "MEN COMFORTMA LAUNCH has a ROAS of 0.22 with a spend of 784.31."
+          ],
+          "contradicting": [],
+          "missing": [
+            "Specific data on audience targeting and creative strategies."
+          ]
+        },
+        "statistical_measures": {
+          "metric_change_pct": -95.9,
+          "sample_size": 3,
+          "effect_magnitude": "large"
+        },
+        "reasoning": "The bottom campaigns have significantly low ROAS, indicating potential issues with targeting or creative strategies. The evidence is consistent with the hypothesis.",
+        "reliability": "high"
+      }
+    ],
+    "validated_insights": [
+      "UGC and Image creatives drive higher ROAS with confidence 90%.",
+      "Top campaigns achieve high ROAS with effective targeting with confidence 75%."
+    ],
+    "rejected_hypotheses": [],
+    "requires_more_data": [
+      "H2: Detailed targeting criteria and audience data.",
+      "H3: Specific data on audience targeting and creative strategies."
+    ],
+    "validated_count": 3,
+    "total_evaluated": 3,
+    "confidence_threshold": 0.6
+  }
+}

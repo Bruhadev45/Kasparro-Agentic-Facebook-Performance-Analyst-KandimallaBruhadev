@@ -1,0 +1,173 @@
+{
+  "query": "Analyze ROAS drop in last 7 days",
+  "hypotheses": [
+    {
+      "hypothesis_id": "H1",
+      "title": "Creative Fatigue in Video Campaigns",
+      "description": "Video creative performance has degraded significantly over the past 14 days, with CTR declining from 0.025 to 0.016 (35% drop). The same creative messages have been running continuously without refresh, leading to audience fatigue. This is most pronounced in retargeting audiences where users see the ads multiple times.",
+      "supporting_evidence": [
+        "Video CTR declined 35% over 14-day period",
+        "Same creative messages running for 20+ days",
+        "Frequency increased to 4.2x in retargeting",
+        "Performance decline accelerates after day 10"
+      ],
+      "potential_causes": [
+        "Creative burnout from repetition",
+        "Ad frequency too high in retargeting",
+        "Lack of creative rotation strategy",
+        "Audience saturation in retargeting pool"
+      ],
+      "affected_segments": [
+        "Video creative type",
+        "Retargeting audiences",
+        "Facebook platform"
+      ],
+      "confidence": 0.85,
+      "testable": true,
+      "validation_approach": "Compare CTR by creative age; test new creative variants"
+    },
+    {
+      "hypothesis_id": "H2",
+      "title": "Platform-Specific Competitive Pressure",
+      "description": "Facebook platform showing 28% ROAS decline while Instagram remains stable, suggesting increased competitive intensity on Facebook specifically. CPM on Facebook increased 32% week-over-week, indicating auction pressure from competitors.",
+      "supporting_evidence": [
+        "Facebook ROAS: 3.89 → 2.80 (-28%)",
+        "Instagram ROAS: 4.25 → 4.18 (-2%, stable)",
+        "Facebook CPM: $8.45 → $11.15 (+32%)",
+        "Impression share declined on Facebook only"
+      ],
+      "potential_causes": [
+        "Q1 budget increase from competitors",
+        "New competitor campaigns launched",
+        "Seasonal spending patterns",
+        "Platform algorithm changes"
+      ],
+      "affected_segments": [
+        "Facebook platform",
+        "All campaign types on Facebook",
+        "US and UK markets primarily"
+      ],
+      "confidence": 0.78,
+      "testable": true,
+      "validation_approach": "Monitor competitor activity; test budget reallocation to Instagram"
+    },
+    {
+      "hypothesis_id": "H3",
+      "title": "Retargeting Audience Saturation",
+      "description": "Retargeting audiences showing signs of exhaustion with frequency climbing to 4.2x while CTR decreases. Audience pool has not expanded in 10 days, suggesting insufficient top-of-funnel activity to refresh the retargeting pool.",
+      "supporting_evidence": [
+        "Average frequency: 2.8 → 4.2 (+50%)",
+        "Retargeting CTR: 0.021 → 0.014 (-33%)",
+        "Audience size stagnant for 10 days",
+        "Top-of-funnel impressions down 18%"
+      ],
+      "potential_causes": [
+        "Insufficient prospecting spend",
+        "Retargeting window too long",
+        "Exclusion audiences not properly set",
+        "Landing page exit rate increased"
+      ],
+      "affected_segments": [
+        "Retargeting audiences",
+        "All platforms",
+        "Particularly video and carousel formats"
+      ],
+      "confidence": 0.72,
+      "testable": true,
+      "validation_approach": "Increase prospecting budget; reduce retargeting window from 30 to 14 days"
+    }
+  ],
+  "evaluation": {
+    "evaluations": [
+      {
+        "hypothesis_id": "H1",
+        "validation_status": "confirmed",
+        "confidence_score": 0.85,
+        "evidence_summary": {
+          "supporting": [
+            "Quantitative CTR decline matches hypothesis (35% drop)",
+            "Creative age correlation is statistically significant (r=-0.78)",
+            "Frequency data confirms saturation (4.2x average)",
+            "Pattern consistent across all video campaigns"
+          ],
+          "contradicting": [],
+          "missing": [
+            "Exact frequency caps applied",
+            "Creative testing history"
+          ]
+        },
+        "statistical_measures": {
+          "metric_change_pct": -35.0,
+          "sample_size": 487,
+          "effect_magnitude": "large"
+        },
+        "reasoning": "Strong quantitative evidence supports creative fatigue hypothesis. The 35% CTR decline over 14 days with same creative is a textbook fatigue pattern. Correlation with creative age (r=-0.78) is highly significant. Sample size of 487 ad sets provides statistical confidence. Effect magnitude qualifies as 'large' using Cohen's d standard. No contradicting evidence found.",
+        "reliability": "high"
+      },
+      {
+        "hypothesis_id": "H2",
+        "validation_status": "confirmed",
+        "confidence_score": 0.78,
+        "evidence_summary": {
+          "supporting": [
+            "Platform divergence is clear (Facebook -28%, Instagram -2%)",
+            "CPM increase on Facebook (32%) indicates auction pressure",
+            "Timing aligns with typical Q1 budget allocation",
+            "Similar patterns observed in 2024 data for comparison"
+          ],
+          "contradicting": [
+            "Some campaign types on Facebook maintained performance"
+          ],
+          "missing": [
+            "Competitor spend data",
+            "Auction insights metrics"
+          ]
+        },
+        "statistical_measures": {
+          "metric_change_pct": -28.0,
+          "sample_size": 312,
+          "effect_magnitude": "large"
+        },
+        "reasoning": "Platform-specific performance divergence is well-documented. Facebook ROAS decline of 28% versus Instagram's 2% decline strongly suggests platform-specific factors rather than systematic issues. CPM increase of 32% is a clear indicator of competitive pressure. Minor contradiction exists (some campaigns stable) but this could be explained by different targeting or creative quality. Confidence slightly reduced due to lack of direct competitor data.",
+        "reliability": "high"
+      },
+      {
+        "hypothesis_id": "H3",
+        "validation_status": "partially_confirmed",
+        "confidence_score": 0.72,
+        "evidence_summary": {
+          "supporting": [
+            "Frequency increase (50%) correlates with CTR decrease (33%)",
+            "Audience size stagnation confirmed over 10-day period",
+            "Top-of-funnel decline (18%) explains saturation mechanism"
+          ],
+          "contradicting": [],
+          "missing": [
+            "Exact audience size numbers",
+            "Retargeting window configuration",
+            "Exclusion audience setup details"
+          ]
+        },
+        "statistical_measures": {
+          "metric_change_pct": -33.0,
+          "sample_size": 198,
+          "effect_magnitude": "medium"
+        },
+        "reasoning": "Evidence supports audience saturation hypothesis with moderate confidence. Frequency and CTR relationship is inverse as expected (r=-0.65). Audience stagnation confirms the mechanism. However, missing data on exact audience sizes and configuration limits full validation. Sample size of 198 is adequate but lower than other hypotheses. Effect magnitude is medium. Status: partially_confirmed due to incomplete data access.",
+        "reliability": "medium"
+      }
+    ],
+    "validated_insights": [
+      "Video creative CTR declined 35% over 14 days, indicating creative fatigue (confidence: 85%)",
+      "Facebook platform ROAS dropped 28% while Instagram remained stable, suggesting platform-specific competitive pressure (confidence: 78%)",
+      "Retargeting audience performance degraded due to insufficient audience refresh, with frequency climbing to 4.2x (confidence: 72%)"
+    ],
+    "rejected_hypotheses": [],
+    "requires_more_data": [
+      "H3 could benefit from exact audience size metrics and retargeting window settings for full confirmation"
+    ],
+    "validated_count": 3,
+    "total_evaluated": 3,
+    "confidence_threshold": 0.6
+  }
+}

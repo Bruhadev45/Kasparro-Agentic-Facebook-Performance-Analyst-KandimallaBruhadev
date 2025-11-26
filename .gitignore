@@ -40,9 +40,9 @@ env/
 logs/*.json
 *.log
 
-# Reports (keep directory)
-reports/*.md
-reports/*.json
+# Reports (keep example outputs for assignment submission)
+# reports/*.md
+# reports/*.json
 reports/observability/*.png
 reports/observability/*.jpg
 
