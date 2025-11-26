@@ -10,7 +10,7 @@ python -m venv .venv && source .venv/bin/activate  # win: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env
 # Edit .env and add your OPENAI_API_KEY
-python run.py "Analyze ROAS drop in last 7 days"
+python run.py
 ```
 
 ## Interactive Mode
@@ -70,7 +70,7 @@ data:
 
 ```bash
 # Direct query
-python run.py "Analyze ROAS drop in last 7 days"
+python run.py
 
 # Interactive mode
 python run.py
