@@ -40,11 +40,12 @@ env/
 logs/*.json
 *.log
 
-# Reports (keep example outputs for assignment submission)
-# reports/*.md
-# reports/*.json
-reports/observability/*.png
-reports/observability/*.jpg
+# Reports (ignore timestamped reports, keep examples)
+reports/report_*.md
+reports/insights_*.json
+reports/creatives_*.json
+!reports/EXAMPLE_*.md
+!reports/EXAMPLE_*.json
 
 # Testing
 .pytest_cache/

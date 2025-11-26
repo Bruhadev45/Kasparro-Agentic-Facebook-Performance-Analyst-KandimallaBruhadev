@@ -246,7 +246,7 @@ class AgentOrchestrator:
         return report
     
     def _save_outputs(self, report: str):
-        """Save all outputs to files.
+        """Save all outputs to files with timestamps.
 
         Args:
             report: Markdown report
@@ -259,44 +259,22 @@ class AgentOrchestrator:
         # Create timestamped filename
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
-        # Save latest versions (overwrite)
-        with open(reports_dir / 'report.md', 'w') as f:
+        # Save all reports with timestamps
+        with open(reports_dir / f'report_{timestamp}.md', 'w') as f:
             f.write(report)
 
-        with open(reports_dir / 'insights.json', 'w') as f:
+        with open(reports_dir / f'insights_{timestamp}.json', 'w') as f:
             json.dump({
                 'query': self.state['query'],
                 'hypotheses': self.state['insights'].get('hypotheses', []),
                 'evaluation': self.state['evaluation']
             }, f, indent=2)
 
-        with open(reports_dir / 'creatives.json', 'w') as f:
-            json.dump(self.state['creatives'], f, indent=2)
-
-        # Also save timestamped versions (archived)
-        archive_dir = reports_dir / 'archive'
-        archive_dir.mkdir(exist_ok=True)
-
-        with open(archive_dir / f'report_{timestamp}.md', 'w') as f:
-            f.write(report)
-
-        with open(archive_dir / f'insights_{timestamp}.json', 'w') as f:
-            json.dump({
-                'query': self.state['query'],
-                'hypotheses': self.state['insights'].get('hypotheses', []),
-                'evaluation': self.state['evaluation']
-            }, f, indent=2)
-
-        with open(archive_dir / f'creatives_{timestamp}.json', 'w') as f:
+        with open(reports_dir / f'creatives_{timestamp}.json', 'w') as f:
             json.dump(self.state['creatives'], f, indent=2)
 
         self.logger.log('outputs', 'saved', {
-            'report': str(reports_dir / 'report.md'),
-            'insights': str(reports_dir / 'insights.json'),
-            'creatives': str(reports_dir / 'creatives.json'),
-            'archived': {
-                'report': str(archive_dir / f'report_{timestamp}.md'),
-                'insights': str(archive_dir / f'insights_{timestamp}.json'),
-                'creatives': str(archive_dir / f'creatives_{timestamp}.json')
-            }
+            'report': str(reports_dir / f'report_{timestamp}.md'),
+            'insights': str(reports_dir / f'insights_{timestamp}.json'),
+            'creatives': str(reports_dir / f'creatives_{timestamp}.json')
         })
