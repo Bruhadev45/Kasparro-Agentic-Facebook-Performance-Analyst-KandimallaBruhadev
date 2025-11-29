@@ -19,43 +19,37 @@ class SchemaValidator:
             "query_understanding",
             "required_metrics",
             "subtasks",
-            "expected_insights"
+            "expected_insights",
         ],
-        "optional_fields": [
-            "original_query",
-            "total_subtasks"
-        ],
+        "optional_fields": ["original_query", "total_subtasks"],
         "subtask_fields": {
-            "required": ["task_id", "description", "assigned_agent", "priority", "dependencies"],
-            "optional": []
-        }
+            "required": [
+                "task_id",
+                "description",
+                "assigned_agent",
+                "priority",
+                "dependencies",
+            ],
+            "optional": [],
+        },
     }
 
     # Data agent analysis schema
     DATA_AGENT_SCHEMA = {
         "version": "1.0.0",
-        "required_fields": [
-            "key_findings"
-        ],
-        "optional_fields": [
-            "metrics",
-            "raw_analysis"
-        ],
+        "required_fields": ["key_findings"],
+        "optional_fields": ["metrics", "raw_analysis"],
         "finding_fields": {
             "required": ["finding"],
-            "optional": ["evidence", "metric_value", "significance"]
-        }
+            "optional": ["evidence", "metric_value", "significance"],
+        },
     }
 
     # Insight agent schema
     INSIGHT_AGENT_SCHEMA = {
         "version": "1.0.0",
-        "required_fields": [
-            "hypotheses"
-        ],
-        "optional_fields": [
-            "insight_summary"
-        ],
+        "required_fields": ["hypotheses"],
+        "optional_fields": ["insight_summary"],
         "hypothesis_fields": {
             "required": [
                 "hypothesis_id",
@@ -66,24 +60,21 @@ class SchemaValidator:
                 "affected_segments",
                 "confidence",
                 "testable",
-                "validation_approach"
+                "validation_approach",
             ],
-            "optional": []
-        }
+            "optional": [],
+        },
     }
 
     # Evaluator schema
     EVALUATOR_SCHEMA = {
         "version": "1.0.0",
-        "required_fields": [
-            "evaluations",
-            "validated_insights"
-        ],
+        "required_fields": ["evaluations", "validated_insights"],
         "optional_fields": [
             "rejected_hypotheses",
             "requires_more_data",
             "validated_count",
-            "confidence_threshold"
+            "confidence_threshold",
         ],
         "evaluation_fields": {
             "required": [
@@ -92,31 +83,20 @@ class SchemaValidator:
                 "confidence_score",
                 "evidence_summary",
                 "reasoning",
-                "reliability"
+                "reliability",
             ],
-            "optional": [
-                "statistical_measures"
-            ]
-        }
+            "optional": ["statistical_measures"],
+        },
     }
 
     # Creative generator schema
     CREATIVE_GENERATOR_SCHEMA = {
         "version": "1.0.0",
-        "required_fields": [
-            "recommendations"
-        ],
-        "optional_fields": [
-            "total_recommendations",
-            "generated_at"
-        ],
+        "required_fields": ["recommendations"],
+        "optional_fields": ["total_recommendations", "generated_at"],
         "recommendation_fields": {
-            "required": [
-                "campaign_name",
-                "current_issue",
-                "creative_variations"
-            ],
-            "optional": []
+            "required": ["campaign_name", "current_issue", "creative_variations"],
+            "optional": [],
         },
         "variation_fields": {
             "required": [
@@ -125,15 +105,16 @@ class SchemaValidator:
                 "message",
                 "cta",
                 "rationale",
-                "expected_improvement"
+                "expected_improvement",
             ],
-            "optional": []
-        }
+            "optional": [],
+        },
     }
 
     @staticmethod
-    def validate(data: Dict[str, Any], schema: Dict[str, Any],
-                 strict: bool = False) -> tuple[bool, List[str]]:
+    def validate(
+        data: Dict[str, Any], schema: Dict[str, Any], strict: bool = False
+    ) -> tuple[bool, List[str]]:
         """Validate data against schema.
 
         Args:
@@ -198,9 +179,7 @@ class SchemaValidator:
             for i, subtask in enumerate(data["subtasks"]):
                 for field in schema["subtask_fields"]["required"]:
                     if field not in subtask:
-                        issues.append(
-                            f"Subtask {i}: Missing required field '{field}'"
-                        )
+                        issues.append(f"Subtask {i}: Missing required field '{field}'")
 
         if "finding_fields" in schema and "key_findings" in data:
             for i, finding in enumerate(data["key_findings"]):
@@ -232,35 +211,39 @@ class SchemaValidator:
         return data
 
     @staticmethod
-    def validate_planner_output(data: Dict[str, Any], strict: bool = False) -> tuple[bool, List[str]]:
+    def validate_planner_output(
+        data: Dict[str, Any], strict: bool = False
+    ) -> tuple[bool, List[str]]:
         """Validate planner output."""
-        return SchemaValidator.validate(
-            data, SchemaValidator.PLANNER_SCHEMA, strict
-        )
+        return SchemaValidator.validate(data, SchemaValidator.PLANNER_SCHEMA, strict)
 
     @staticmethod
-    def validate_data_agent_output(data: Dict[str, Any], strict: bool = False) -> tuple[bool, List[str]]:
+    def validate_data_agent_output(
+        data: Dict[str, Any], strict: bool = False
+    ) -> tuple[bool, List[str]]:
         """Validate data agent output."""
-        return SchemaValidator.validate(
-            data, SchemaValidator.DATA_AGENT_SCHEMA, strict
-        )
+        return SchemaValidator.validate(data, SchemaValidator.DATA_AGENT_SCHEMA, strict)
 
     @staticmethod
-    def validate_insight_agent_output(data: Dict[str, Any], strict: bool = False) -> tuple[bool, List[str]]:
+    def validate_insight_agent_output(
+        data: Dict[str, Any], strict: bool = False
+    ) -> tuple[bool, List[str]]:
         """Validate insight agent output."""
         return SchemaValidator.validate(
             data, SchemaValidator.INSIGHT_AGENT_SCHEMA, strict
         )
 
     @staticmethod
-    def validate_evaluator_output(data: Dict[str, Any], strict: bool = False) -> tuple[bool, List[str]]:
+    def validate_evaluator_output(
+        data: Dict[str, Any], strict: bool = False
+    ) -> tuple[bool, List[str]]:
         """Validate evaluator output."""
-        return SchemaValidator.validate(
-            data, SchemaValidator.EVALUATOR_SCHEMA, strict
-        )
+        return SchemaValidator.validate(data, SchemaValidator.EVALUATOR_SCHEMA, strict)
 
     @staticmethod
-    def validate_creative_generator_output(data: Dict[str, Any], strict: bool = False) -> tuple[bool, List[str]]:
+    def validate_creative_generator_output(
+        data: Dict[str, Any], strict: bool = False
+    ) -> tuple[bool, List[str]]:
         """Validate creative generator output."""
         return SchemaValidator.validate(
             data, SchemaValidator.CREATIVE_GENERATOR_SCHEMA, strict
@@ -284,9 +267,7 @@ def check_schema_drift(old_data: Dict[str, Any], new_data: Dict[str, Any]) -> Li
     new_version = new_data.get("schema_version", "unknown")
 
     if old_version != new_version:
-        warnings.append(
-            f"Schema version changed from {old_version} to {new_version}"
-        )
+        warnings.append(f"Schema version changed from {old_version} to {new_version}")
 
     # Check for removed fields
     old_keys = set(old_data.keys())
@@ -336,11 +317,11 @@ def save_schema_definitions(output_path: str):
             "data_agent": SchemaValidator.DATA_AGENT_SCHEMA,
             "insight_agent": SchemaValidator.INSIGHT_AGENT_SCHEMA,
             "evaluator": SchemaValidator.EVALUATOR_SCHEMA,
-            "creative_generator": SchemaValidator.CREATIVE_GENERATOR_SCHEMA
-        }
+            "creative_generator": SchemaValidator.CREATIVE_GENERATOR_SCHEMA,
+        },
     }
 
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         json.dump(schemas, f, indent=2)
 
     print(f"Schema definitions saved to {output_path}")

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from agents.evaluator import EvaluatorAgent
 
@@ -28,7 +28,8 @@ class MockClient:
     class Chat:
         class Completions:
             def create(self, **kwargs):
-                return MockClient.MockCompletion('''{
+                return MockClient.MockCompletion(
+                    """{
                     "evaluations": [
                         {
                             "hypothesis_id": "H1",
@@ -51,7 +52,8 @@ class MockClient:
                     "validated_insights": ["Insight 1"],
                     "rejected_hypotheses": [],
                     "requires_more_data": []
-                }''')
+                }"""
+                )
 
         def __init__(self):
             self.completions = self.Completions()
@@ -63,11 +65,11 @@ class MockClient:
 def test_evaluator_initialization():
     """Test evaluator initialization."""
     config = {
-        'llm': {'model': 'test', 'temperature': 0.7, 'max_tokens': 1000},
-        'thresholds': {'confidence_min': 0.6}
+        "llm": {"model": "test", "temperature": 0.7, "max_tokens": 1000},
+        "thresholds": {"confidence_min": 0.6},
     }
     client = MockClient()
-    
+
     evaluator = EvaluatorAgent(config, client)
     assert evaluator.config == config
 
@@ -75,51 +77,49 @@ def test_evaluator_initialization():
 def test_evaluator_execute():
     """Test evaluator execution."""
     config = {
-        'llm': {'model': 'test', 'temperature': 0.7, 'max_tokens': 1000},
-        'thresholds': {'confidence_min': 0.6}
+        "llm": {"model": "test", "temperature": 0.7, "max_tokens": 1000},
+        "thresholds": {"confidence_min": 0.6},
     }
     client = MockClient()
     evaluator = EvaluatorAgent(config, client)
-    
+
     hypotheses = [
         {
-            'hypothesis_id': 'H1',
-            'title': 'Test Hypothesis',
-            'description': 'Test description',
-            'confidence': 0.7
+            "hypothesis_id": "H1",
+            "title": "Test Hypothesis",
+            "description": "Test description",
+            "confidence": 0.7,
         }
     ]
-    
+
     result = evaluator.execute(
-        hypotheses=hypotheses,
-        data_summary="Test summary",
-        evidence="Test evidence"
+        hypotheses=hypotheses, data_summary="Test summary", evidence="Test evidence"
     )
-    
-    assert 'evaluations' in result
-    assert 'validated_count' in result
-    assert result['validated_count'] >= 0
+
+    assert "evaluations" in result
+    assert "validated_count" in result
+    assert result["validated_count"] >= 0
 
 
 def test_evaluator_confidence_threshold():
     """Test confidence threshold filtering."""
     config = {
-        'llm': {'model': 'test', 'temperature': 0.7, 'max_tokens': 1000},
-        'thresholds': {'confidence_min': 0.8}
+        "llm": {"model": "test", "temperature": 0.7, "max_tokens": 1000},
+        "thresholds": {"confidence_min": 0.8},
     }
     client = MockClient()
     evaluator = EvaluatorAgent(config, client)
-    
+
     result = evaluator.execute(
-        hypotheses=[{'hypothesis_id': 'H1', 'title': 'Test'}],
+        hypotheses=[{"hypothesis_id": "H1", "title": "Test"}],
         data_summary="Test",
-        evidence="Test"
+        evidence="Test",
     )
-    
+
     # Should have filtered based on confidence >= 0.8
-    assert result['confidence_threshold'] == 0.8
-    assert result['validated_count'] == 1  # Mock returns 0.85
+    assert result["confidence_threshold"] == 0.8
+    assert result["validated_count"] == 1  # Mock returns 0.85
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

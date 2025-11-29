@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from agents.insight_agent import InsightAgent
 
@@ -28,7 +28,8 @@ class MockClient:
     class Chat:
         class Completions:
             def create(self, **kwargs):
-                return MockClient.MockCompletion('''{
+                return MockClient.MockCompletion(
+                    """{
                     "hypotheses": [
                         {
                             "hypothesis_id": "H1",
@@ -66,7 +67,8 @@ class MockClient:
                         }
                     ],
                     "insight_summary": "Performance decline driven by creative fatigue and audience saturation"
-                }''')
+                }"""
+                )
 
         def __init__(self):
             self.completions = self.Completions()
@@ -78,13 +80,7 @@ class MockClient:
 @pytest.fixture
 def config():
     """Create test configuration."""
-    return {
-        'llm': {
-            'model': 'gpt-4o',
-            'temperature': 0.3,
-            'max_tokens': 2500
-        }
-    }
+    return {"llm": {"model": "gpt-4o", "temperature": 0.3, "max_tokens": 2500}}
 
 
 def test_insight_agent_initialization(config):
@@ -106,9 +102,9 @@ def test_insight_agent_execute(config):
 
     result = agent.execute(context, data_summary)
 
-    assert 'hypotheses' in result
-    assert 'insight_summary' in result
-    assert len(result['hypotheses']) > 0
+    assert "hypotheses" in result
+    assert "insight_summary" in result
+    assert len(result["hypotheses"]) > 0
 
 
 def test_insight_agent_hypothesis_structure(config):
@@ -118,16 +114,16 @@ def test_insight_agent_hypothesis_structure(config):
 
     result = agent.execute("Test context", "Test summary")
 
-    for hypothesis in result['hypotheses']:
-        assert 'hypothesis_id' in hypothesis
-        assert 'title' in hypothesis
-        assert 'description' in hypothesis
-        assert 'supporting_evidence' in hypothesis
-        assert 'potential_causes' in hypothesis
-        assert 'affected_segments' in hypothesis
-        assert 'confidence' in hypothesis
-        assert 'testable' in hypothesis
-        assert 'validation_approach' in hypothesis
+    for hypothesis in result["hypotheses"]:
+        assert "hypothesis_id" in hypothesis
+        assert "title" in hypothesis
+        assert "description" in hypothesis
+        assert "supporting_evidence" in hypothesis
+        assert "potential_causes" in hypothesis
+        assert "affected_segments" in hypothesis
+        assert "confidence" in hypothesis
+        assert "testable" in hypothesis
+        assert "validation_approach" in hypothesis
 
 
 def test_insight_agent_confidence_validation(config):
@@ -137,14 +133,15 @@ def test_insight_agent_confidence_validation(config):
 
     result = agent.execute("Test context", "Test summary")
 
-    for hypothesis in result['hypotheses']:
-        confidence = hypothesis['confidence']
+    for hypothesis in result["hypotheses"]:
+        confidence = hypothesis["confidence"]
         assert isinstance(confidence, (int, float))
         assert 0.0 <= confidence <= 1.0
 
 
 def test_insight_agent_missing_confidence(config):
     """Test missing confidence scores are set to default."""
+
     # Create mock that returns hypothesis without confidence
     class MockClientNoConfidence:
         class MockMessage:
@@ -157,12 +154,17 @@ def test_insight_agent_missing_confidence(config):
 
         class MockCompletion:
             def __init__(self, content):
-                self.choices = [MockClientNoConfidence.MockChoice(MockClientNoConfidence.MockMessage(content))]
+                self.choices = [
+                    MockClientNoConfidence.MockChoice(
+                        MockClientNoConfidence.MockMessage(content)
+                    )
+                ]
 
         class Chat:
             class Completions:
                 def create(self, **kwargs):
-                    return MockClientNoConfidence.MockCompletion('''{
+                    return MockClientNoConfidence.MockCompletion(
+                        """{
                         "hypotheses": [
                             {
                                 "hypothesis_id": "H1",
@@ -176,7 +178,8 @@ def test_insight_agent_missing_confidence(config):
                             }
                         ],
                         "insight_summary": "Test summary"
-                    }''')
+                    }"""
+                    )
 
             def __init__(self):
                 self.completions = self.Completions()
@@ -190,11 +193,12 @@ def test_insight_agent_missing_confidence(config):
     result = agent.execute("Test", "Test")
 
     # Should have default confidence of 0.5
-    assert result['hypotheses'][0]['confidence'] == 0.5
+    assert result["hypotheses"][0]["confidence"] == 0.5
 
 
 def test_insight_agent_confidence_bounds(config):
     """Test confidence scores are clamped to valid range."""
+
     # Create mock with out-of-bounds confidence
     class MockClientBadConfidence:
         class MockMessage:
@@ -207,12 +211,17 @@ def test_insight_agent_confidence_bounds(config):
 
         class MockCompletion:
             def __init__(self, content):
-                self.choices = [MockClientBadConfidence.MockChoice(MockClientBadConfidence.MockMessage(content))]
+                self.choices = [
+                    MockClientBadConfidence.MockChoice(
+                        MockClientBadConfidence.MockMessage(content)
+                    )
+                ]
 
         class Chat:
             class Completions:
                 def create(self, **kwargs):
-                    return MockClientBadConfidence.MockCompletion('''{
+                    return MockClientBadConfidence.MockCompletion(
+                        """{
                         "hypotheses": [
                             {
                                 "hypothesis_id": "H1",
@@ -238,7 +247,8 @@ def test_insight_agent_confidence_bounds(config):
                             }
                         ],
                         "insight_summary": "Test"
-                    }''')
+                    }"""
+                    )
 
             def __init__(self):
                 self.completions = self.Completions()
@@ -252,8 +262,8 @@ def test_insight_agent_confidence_bounds(config):
     result = agent.execute("Test", "Test")
 
     # Confidence should be clamped to [0, 1]
-    assert result['hypotheses'][0]['confidence'] == 1.0
-    assert result['hypotheses'][1]['confidence'] == 0.0
+    assert result["hypotheses"][0]["confidence"] == 1.0
+    assert result["hypotheses"][1]["confidence"] == 0.0
 
 
 def test_insight_agent_multiple_hypotheses(config):
@@ -264,7 +274,7 @@ def test_insight_agent_multiple_hypotheses(config):
     result = agent.execute("Test context", "Test summary")
 
     # Mock returns 2 hypotheses
-    assert len(result['hypotheses']) >= 2
+    assert len(result["hypotheses"]) >= 2
 
 
 def test_insight_agent_hypothesis_uniqueness(config):
@@ -274,9 +284,9 @@ def test_insight_agent_hypothesis_uniqueness(config):
 
     result = agent.execute("Test context", "Test summary")
 
-    hypothesis_ids = [h['hypothesis_id'] for h in result['hypotheses']]
+    hypothesis_ids = [h["hypothesis_id"] for h in result["hypotheses"]]
     assert len(hypothesis_ids) == len(set(hypothesis_ids))  # All unique
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

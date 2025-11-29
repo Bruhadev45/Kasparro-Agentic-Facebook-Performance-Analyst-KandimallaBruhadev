@@ -121,7 +121,7 @@ jobs:
     - name: Check for security vulnerabilities in dependencies
       continue-on-error: true
       run: |
-        safety check --json
+        safety scan --json || true
 
     - name: Run bandit security linter
       continue-on-error: true

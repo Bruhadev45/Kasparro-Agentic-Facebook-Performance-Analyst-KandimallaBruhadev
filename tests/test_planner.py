@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from agents.planner import PlannerAgent
 
@@ -28,7 +28,8 @@ class MockClient:
     class Chat:
         class Completions:
             def create(self, **kwargs):
-                return MockClient.MockCompletion('''{
+                return MockClient.MockCompletion(
+                    """{
                     "query_understanding": "Analyze ROAS decline in recent period",
                     "required_metrics": ["ROAS", "CTR", "Spend", "Revenue"],
                     "subtasks": [
@@ -59,7 +60,8 @@ class MockClient:
                         "Campaign performance comparison",
                         "Root cause hypotheses"
                     ]
-                }''')
+                }"""
+                )
 
         def __init__(self):
             self.completions = self.Completions()
@@ -71,13 +73,7 @@ class MockClient:
 @pytest.fixture
 def config():
     """Create test configuration."""
-    return {
-        'llm': {
-            'model': 'gpt-4o',
-            'temperature': 0.3,
-            'max_tokens': 2500
-        }
-    }
+    return {"llm": {"model": "gpt-4o", "temperature": 0.3, "max_tokens": 2500}}
 
 
 def test_planner_initialization(config):
@@ -99,12 +95,12 @@ def test_planner_execute(config):
 
     result = planner.execute(query, data_summary)
 
-    assert 'query_understanding' in result
-    assert 'required_metrics' in result
-    assert 'subtasks' in result
-    assert 'expected_insights' in result
-    assert 'original_query' in result
-    assert 'total_subtasks' in result
+    assert "query_understanding" in result
+    assert "required_metrics" in result
+    assert "subtasks" in result
+    assert "expected_insights" in result
+    assert "original_query" in result
+    assert "total_subtasks" in result
 
 
 def test_planner_subtasks_structure(config):
@@ -114,14 +110,14 @@ def test_planner_subtasks_structure(config):
 
     result = planner.execute("Test query", "Test summary")
 
-    assert len(result['subtasks']) > 0
+    assert len(result["subtasks"]) > 0
 
-    for subtask in result['subtasks']:
-        assert 'task_id' in subtask
-        assert 'description' in subtask
-        assert 'assigned_agent' in subtask
-        assert 'priority' in subtask
-        assert 'dependencies' in subtask
+    for subtask in result["subtasks"]:
+        assert "task_id" in subtask
+        assert "description" in subtask
+        assert "assigned_agent" in subtask
+        assert "priority" in subtask
+        assert "dependencies" in subtask
 
 
 def test_planner_preserves_query(config):
@@ -132,7 +128,7 @@ def test_planner_preserves_query(config):
     query = "Analyze CTR performance"
     result = planner.execute(query, "Test summary")
 
-    assert result['original_query'] == query
+    assert result["original_query"] == query
 
 
 def test_planner_counts_subtasks(config):
@@ -142,8 +138,8 @@ def test_planner_counts_subtasks(config):
 
     result = planner.execute("Test query", "Test summary")
 
-    assert result['total_subtasks'] == len(result['subtasks'])
-    assert result['total_subtasks'] == 3  # Based on mock response
+    assert result["total_subtasks"] == len(result["subtasks"])
+    assert result["total_subtasks"] == 3  # Based on mock response
 
 
 def test_planner_handles_complex_query(config):
@@ -160,7 +156,7 @@ def test_planner_handles_complex_query(config):
     result = planner.execute(complex_query, "Test summary")
 
     assert result is not None
-    assert len(result['subtasks']) > 0
+    assert len(result["subtasks"]) > 0
 
 
 def test_planner_handles_empty_query(config):
@@ -171,9 +167,9 @@ def test_planner_handles_empty_query(config):
     result = planner.execute("", "Test summary")
 
     # Should still return valid structure even with empty query
-    assert 'subtasks' in result
-    assert isinstance(result['subtasks'], list)
+    assert "subtasks" in result
+    assert isinstance(result["subtasks"], list)
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

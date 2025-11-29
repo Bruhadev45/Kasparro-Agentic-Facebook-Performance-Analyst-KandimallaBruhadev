@@ -7,9 +7,9 @@ from .evaluator import EvaluatorAgent
 from .creative_generator import CreativeGeneratorAgent
 
 __all__ = [
-    'PlannerAgent',
-    'DataAgent',
-    'InsightAgent',
-    'EvaluatorAgent',
-    'CreativeGeneratorAgent'
+    "PlannerAgent",
+    "DataAgent",
+    "InsightAgent",
+    "EvaluatorAgent",
+    "CreativeGeneratorAgent",
 ]

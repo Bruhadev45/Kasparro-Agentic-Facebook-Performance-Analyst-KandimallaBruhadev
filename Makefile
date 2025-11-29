@@ -65,20 +65,20 @@ test-coverage:
 # Code quality targets
 lint:
 	@echo "Running flake8..."
-	flake8 src tests --max-line-length=127 --extend-ignore=E203,W503
+	flake8 src tests --max-line-length=88 --extend-ignore=E203,W503
 	@echo "✓ Flake8 passed"
 
 format:
 	@echo "Formatting code with black..."
-	black src tests --line-length=127
+	black src tests
 	@echo "Sorting imports with isort..."
-	isort src tests --profile black --line-length=127
+	isort src tests --profile black
 	@echo "✓ Code formatted"
 
 format-check:
 	@echo "Checking code formatting..."
-	black src tests --check --line-length=127
-	isort src tests --check --profile black --line-length=127
+	black src tests --check
+	isort src tests --check --profile black
 	@echo "✓ Format check passed"
 
 type-check:
