@@ -1,6 +1,7 @@
 """Base Agent class for all specialized agents."""
 
 import json
+import time
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 from openai import OpenAI
@@ -22,6 +23,12 @@ class BaseAgent(ABC):
         self.model = config.get('llm', {}).get('model', 'gpt-4-turbo-preview')
         self.temperature = config.get('llm', {}).get('temperature', 0.7)
         self.max_tokens = config.get('llm', {}).get('max_tokens', 4000)
+
+        # Retry configuration
+        self.max_retries = config.get('llm', {}).get('max_retries', 3)
+        self.initial_retry_delay = config.get('llm', {}).get('initial_retry_delay', 1.0)
+        self.max_retry_delay = config.get('llm', {}).get('max_retry_delay', 60.0)
+        self.backoff_factor = config.get('llm', {}).get('backoff_factor', 2.0)
         
     def load_prompt(self, prompt_file: str, **kwargs) -> str:
         """Load and format prompt template.
@@ -40,7 +47,7 @@ class BaseAgent(ABC):
         return template.format(**kwargs)
     
     def call_llm(self, prompt: str, system: Optional[str] = None) -> str:
-        """Call OpenAI API with prompt.
+        """Call OpenAI API with prompt, includes retry logic with exponential backoff.
 
         Args:
             prompt: User prompt
@@ -48,6 +55,9 @@ class BaseAgent(ABC):
 
         Returns:
             Model response text
+
+        Raises:
+            Exception: If all retry attempts fail
         """
         messages = []
 
@@ -56,13 +66,47 @@ class BaseAgent(ABC):
 
         messages.append({"role": "user", "content": prompt})
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            max_tokens=self.max_tokens,
-            temperature=self.temperature,
-            messages=messages
-        )
-        return response.choices[0].message.content
+        last_exception = None
+        retry_delay = self.initial_retry_delay
+
+        for attempt in range(self.max_retries):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                    messages=messages
+                )
+                return response.choices[0].message.content
+
+            except Exception as e:
+                last_exception = e
+                error_type = type(e).__name__
+
+                # Check if error is retryable
+                retryable_errors = [
+                    'RateLimitError',
+                    'APIConnectionError',
+                    'APITimeoutError',
+                    'InternalServerError',
+                    'ServiceUnavailableError'
+                ]
+
+                if error_type not in retryable_errors and not any(err in str(e) for err in ['rate limit', 'timeout', 'connection']):
+                    # Non-retryable error, raise immediately
+                    print(f"Non-retryable error: {error_type}: {str(e)}")
+                    raise
+
+                # Calculate delay with exponential backoff
+                if attempt < self.max_retries - 1:
+                    delay = min(retry_delay, self.max_retry_delay)
+                    print(f"API call failed (attempt {attempt + 1}/{self.max_retries}): {error_type}. Retrying in {delay:.1f}s...")
+                    time.sleep(delay)
+                    retry_delay *= self.backoff_factor
+
+        # All retries exhausted
+        print(f"All {self.max_retries} retry attempts failed.")
+        raise last_exception
     
     def parse_json_response(self, response: str) -> Dict[str, Any]:
         """Extract and parse JSON from response.

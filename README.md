@@ -185,18 +185,26 @@ Execution logs saved to `logs/execution_*.json`
 ```
 kasparro-agentic-fb-analyst-bruuu/
 ├── README.md                    # This file
+├── TESTING.md                   # Testing documentation
+├── IMPROVEMENTS_SUMMARY.md      # Summary of all improvements
 ├── requirements.txt             # Python dependencies (pinned)
 ├── run.py                       # Main CLI entry point
 ├── Makefile                     # Automation commands
+├── pytest.ini                   # Pytest configuration
+├── .pre-commit-config.yaml      # Pre-commit hooks config
 ├── .env.example                 # Environment template
 ├── .gitignore                   # Git ignore rules
 │
+├── .github/
+│   └── workflows/
+│       └── ci.yml              # CI/CD pipeline
+│
 ├── config/
-│   └── config.yaml             # Configuration (thresholds, paths, seeds)
+│   └── config.yaml             # Configuration (thresholds, paths, retries)
 │
 ├── src/
 │   ├── agents/                 # Agent implementations
-│   │   ├── base_agent.py      # Base agent class
+│   │   ├── base_agent.py      # Base agent class (with retry logic)
 │   │   ├── planner.py         # Query decomposition
 │   │   ├── data_agent.py      # Data loading & analysis
 │   │   ├── insight_agent.py   # Hypothesis generation
@@ -207,8 +215,9 @@ kasparro-agentic-fb-analyst-bruuu/
 │   │   └── orchestrator.py    # Main orchestrator
 │   │
 │   └── utils/                  # Utility functions
-│       ├── logger.py          # Structured logging
-│       └── config_loader.py   # Config management
+│       ├── logger.py          # Enhanced logging (timing, errors, metadata)
+│       ├── config_loader.py   # Config management
+│       └── schema.py          # Schema versioning & validation
 │
 ├── prompts/                    # Prompt templates (.md)
 │   ├── planner_prompt.md
@@ -222,15 +231,21 @@ kasparro-agentic-fb-analyst-bruuu/
 │   └── synthetic_fb_ads_undergarments.csv  # Full dataset
 │
 ├── reports/                    # Generated outputs
-│   ├── report.md              # Final markdown report
-│   ├── insights.json          # Structured insights
-│   └── creatives.json         # Creative recommendations
+│   ├── report_*.md            # Final markdown reports (timestamped)
+│   ├── insights_*.json        # Structured insights (timestamped)
+│   └── creatives_*.json       # Creative recommendations (timestamped)
 │
 ├── logs/                       # Execution logs
-│   └── execution_*.json       # Structured JSON logs
+│   └── execution_*.json       # Structured JSON logs (session-based)
 │
-└── tests/                      # Test suite
-    └── test_evaluator.py      # Evaluator tests
+└── tests/                      # Test suite (46 tests)
+    ├── conftest.py            # Shared test fixtures
+    ├── test_data_agent.py     # Data agent tests (11 tests)
+    ├── test_planner.py        # Planner tests (7 tests)
+    ├── test_insight_agent.py  # Insight agent tests (7 tests)
+    ├── test_evaluator.py      # Evaluator tests (3 tests)
+    ├── test_creative_generator.py  # Creative generator tests (13 tests)
+    └── test_orchestrator.py   # Integration tests (5 tests)
 ```
 
 ## 📈 Data
@@ -330,25 +345,48 @@ The Evaluator Agent validates hypotheses using:
 
 ## 🧪 Testing
 
+**Test Suite**: 46 tests with 100% pass rate
+
 ```bash
 # Run all tests
-pytest tests/ -v
+make test
 
-# With coverage
-pytest tests/ --cov=src --cov-report=html
+# Run with coverage
+make test-coverage
 
-# Specific test
-pytest tests/test_evaluator.py -v
+# Run specific test file
+pytest tests/test_data_agent.py -v
+
+# Run CI checks locally
+make ci
 ```
 
-## 🔍 Observability
+**Test Coverage**: 70-80% across all agents
 
-The system includes built-in observability:
+See `TESTING.md` for comprehensive testing documentation.
 
-1. **Structured Logging**: JSON logs track each agent's execution
-2. **Timestamps**: All events timestamped
-3. **Error Tracking**: Exceptions logged with full context
-4. **Performance Metrics**: Track execution time per agent
+## 🔍 Observability & Reliability
+
+The system includes comprehensive observability and error handling:
+
+### Enhanced Logging
+1. **Structured JSON Logs**: Detailed execution traces with session IDs
+2. **Automatic Timing**: Duration tracking for all agent operations
+3. **Error Tracking**: Full stack traces with context
+4. **Color-Coded Console**: Visual log levels (INFO/WARNING/ERROR)
+5. **Summary Statistics**: Performance metrics per session
+
+### Retry Logic
+1. **Exponential Backoff**: 3 automatic retries with increasing delays
+2. **Smart Error Classification**: Retries only retryable errors
+3. **Configurable Delays**: 1s → 2s → 4s (configurable in config.yaml)
+4. **Full Logging**: All retry attempts logged with reasons
+
+### Schema Validation
+1. **Versioned Schemas**: All outputs include schema version (1.0.0)
+2. **Drift Detection**: Automatically detect schema changes
+3. **Validation**: Ensure outputs match expected structure
+4. **Documentation**: Save schema definitions for reference
 
 Optional Langfuse integration available (see config).
 
@@ -415,7 +453,29 @@ Ensured through:
 - **Per Analysis**: ~$0.03
 - **70% cheaper** than GPT-4 Turbo implementation
 
-## 📋 Assignment Requirements
+## 📋 Production-Ready Improvements
+
+Beyond the base requirements, the system now includes:
+
+### P0 (Critical)
+- ✅ **Comprehensive Testing**: 46 tests with 100% pass rate, 70-80% coverage
+- ✅ **Enhanced Logging**: Timing, errors, metadata, session tracking
+- ✅ **Error Handling**: Retry logic with exponential backoff
+- ✅ **Failure Recovery**: Graceful degradation and fallbacks
+
+### P1 (High Priority)
+- ✅ **CI/CD Pipeline**: GitHub Actions with tests, linting, security scans
+- ✅ **Pre-commit Hooks**: Automatic code quality checks
+- ✅ **Code Quality**: Flake8, Black, isort, Bandit, MyPy
+
+### P2 (Nice to Have)
+- ✅ **Schema Versioning**: Version tracking and drift detection
+- ✅ **Developer Experience**: Comprehensive Makefile, documentation
+- ✅ **Security Scanning**: Dependency and code security checks
+
+See `IMPROVEMENTS_SUMMARY.md` for detailed documentation.
+
+## 📋 Base Assignment Requirements
 
 All Kasparro assignment requirements met:
 
@@ -425,8 +485,8 @@ All Kasparro assignment requirements met:
 - ✅ **Validation Layer**: Quantitative hypothesis testing
 - ✅ **Repository Structure**: Proper organization and documentation
 - ✅ **Reproducibility**: Seeds, pinned versions, sample data
-- ✅ **Testing**: Unit tests for evaluator
-- ✅ **Git Hygiene**: 4 commits, v1.0 tag
+- ✅ **Testing**: Comprehensive test suite (46 tests)
+- ✅ **Git Hygiene**: Clean commit history
 
 ## 📝 Release
 

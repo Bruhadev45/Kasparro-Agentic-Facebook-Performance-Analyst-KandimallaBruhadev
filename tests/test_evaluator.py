@@ -11,42 +11,53 @@ from agents.evaluator import EvaluatorAgent
 
 
 class MockClient:
-    """Mock Anthropic client for testing."""
-    
-    class MockResponse:
-        def __init__(self, text):
-            self.content = [type('obj', (object,), {'text': text})]
-    
-    class Messages:
-        def create(self, **kwargs):
-            # Return a mock JSON response
-            return MockClient.MockResponse('''{
-                "evaluations": [
-                    {
-                        "hypothesis_id": "H1",
-                        "validation_status": "confirmed",
-                        "confidence_score": 0.85,
-                        "evidence_summary": {
-                            "supporting": ["Evidence 1"],
-                            "contradicting": [],
-                            "missing": []
-                        },
-                        "statistical_measures": {
-                            "metric_change_pct": 15.0,
-                            "sample_size": 100,
-                            "effect_magnitude": "medium"
-                        },
-                        "reasoning": "Test reasoning",
-                        "reliability": "high"
-                    }
-                ],
-                "validated_insights": ["Insight 1"],
-                "rejected_hypotheses": [],
-                "requires_more_data": []
-            }''')
-    
+    """Mock OpenAI client for testing."""
+
+    class MockMessage:
+        def __init__(self, content):
+            self.content = content
+
+    class MockChoice:
+        def __init__(self, message):
+            self.message = message
+
+    class MockCompletion:
+        def __init__(self, content):
+            self.choices = [MockClient.MockChoice(MockClient.MockMessage(content))]
+
+    class Chat:
+        class Completions:
+            def create(self, **kwargs):
+                return MockClient.MockCompletion('''{
+                    "evaluations": [
+                        {
+                            "hypothesis_id": "H1",
+                            "validation_status": "confirmed",
+                            "confidence_score": 0.85,
+                            "evidence_summary": {
+                                "supporting": ["Evidence 1"],
+                                "contradicting": [],
+                                "missing": []
+                            },
+                            "statistical_measures": {
+                                "metric_change_pct": 15.0,
+                                "sample_size": 100,
+                                "effect_magnitude": "medium"
+                            },
+                            "reasoning": "Test reasoning",
+                            "reliability": "high"
+                        }
+                    ],
+                    "validated_insights": ["Insight 1"],
+                    "rejected_hypotheses": [],
+                    "requires_more_data": []
+                }''')
+
+        def __init__(self):
+            self.completions = self.Completions()
+
     def __init__(self):
-        self.messages = self.Messages()
+        self.chat = self.Chat()
 
 
 def test_evaluator_initialization():

@@ -24,6 +24,11 @@ llm:
   model: "gpt-4o"
   temperature: 0.3
   max_tokens: 2500
+  # Retry configuration for API calls
+  max_retries: 3
+  initial_retry_delay: 1.0  # seconds
+  max_retry_delay: 60.0     # seconds
+  backoff_factor: 2.0       # exponential backoff multiplier
 
 # Output paths
 outputs:
