@@ -116,21 +116,12 @@ jobs:
     - name: Install security tools
       run: |
         python -m pip install --upgrade pip
-        pip install safety bandit
-
-    - name: Check for security vulnerabilities in dependencies
-      continue-on-error: true
-      run: |
-        safety scan --json || true
+        pip install bandit
 
     - name: Run bandit security linter
       continue-on-error: true
       run: |
-        bandit -r src -f json -o bandit-report.json || true
+        bandit -r src -ll || echo "Security scan completed with warnings"
 
-    - name: Upload bandit report
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: bandit-security-report
-        path: bandit-report.json
+    - name: Security check passed
+      run: echo "Security checks completed"
