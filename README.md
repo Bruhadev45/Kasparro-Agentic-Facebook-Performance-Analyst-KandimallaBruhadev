@@ -1,6 +1,8 @@
 # Kasparro — Agentic Facebook Performance Analyst
 
-An autonomous multi-agent system that diagnoses Facebook Ads performance issues, identifies drivers behind ROAS fluctuations, and recommends creative improvements using both quantitative signals and creative messaging data.
+> **🎯 V2 High Bar Submission**: See [`README_V2.md`](./README_V2.md) for the complete V2 documentation with production-level enhancements.
+
+An autonomous multi-agent system that diagnoses Facebook Ads performance issues with baseline/current comparisons, validates insights with structured evidence, and generates creative recommendations tightly linked to diagnosed issues.
 
 ## Quick Start
 
@@ -515,6 +517,5 @@ This is a technical assessment project for Kasparro.
 ---
 
 **Built with**: Python 3.10+ | OpenAI GPT-4o | Multi-Agent Architecture
-**Repository**: https://github.com/Bruhadev45/Kasparro-Agentic-Facebook-Performance-Analyst
-**Author**: Bruuu
-**Date**: November 2025
+**Author**: Kandimalla Bruhadev
+**Date**: December 2025

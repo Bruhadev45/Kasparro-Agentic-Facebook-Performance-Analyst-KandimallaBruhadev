@@ -1,14 +1,18 @@
-"""Data Agent - Loads and analyzes dataset."""
+"""Data Agent - Loads and analyzes dataset with production-level validation."""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from .base_agent import BaseAgent
+from utils.data_validation import DataValidator
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DataAgent(BaseAgent):
-    """Agent responsible for data loading, processing, and analysis."""
+    """Agent responsible for data loading, processing, and analysis with comprehensive error handling."""
 
     def __init__(self, config: Dict[str, Any], client):
         """Initialize data agent.
@@ -19,24 +23,57 @@ class DataAgent(BaseAgent):
         """
         super().__init__(config, client)
         self.df = None
+        self.data_quality_report = None
         self.data_path = config["data"]["full_csv"]
         if config["data"].get("use_sample_data"):
             self.data_path = config["data"]["sample_csv"]
 
     def load_data(self) -> pd.DataFrame:
-        """Load Facebook Ads dataset.
+        """Load and validate Facebook Ads dataset with comprehensive error handling.
 
         Returns:
-            DataFrame with ads data
+            Cleaned DataFrame with ads data
+
+        Raises:
+            ValueError: If data validation fails
         """
         if self.df is None:
-            self.df = pd.read_csv(self.data_path)
-            self.df["date"] = pd.to_datetime(self.df["date"])
-            # Clean column names
-            self.df.columns = self.df.columns.str.strip()
-            # Handle missing values
-            self.df["spend"] = pd.to_numeric(self.df["spend"], errors="coerce")
-            self.df.fillna({"purchases": 0}, inplace=True)
+            try:
+                logger.info(f"Loading data from {self.data_path}")
+
+                # Load raw data
+                self.df = pd.read_csv(self.data_path)
+                logger.info(f"Loaded {len(self.df)} rows, {len(self.df.columns)} columns")
+
+                # Pre-validation schema check
+                is_valid, errors = DataValidator.validate_schema(self.df)
+                if not is_valid:
+                    logger.warning(f"Schema validation issues: {'; '.join(errors)}")
+                    logger.info("Attempting to clean and fix data...")
+
+                # Clean and validate data
+                self.df = DataValidator.clean_data(self.df, self.config)
+
+                # Post-validation check
+                is_valid, errors = DataValidator.validate_schema(self.df)
+                if not is_valid:
+                    raise ValueError(f"Data validation failed after cleaning: {'; '.join(errors)}")
+
+                # Generate data quality report
+                self.data_quality_report = DataValidator.get_data_quality_report(self.df)
+                logger.info(
+                    f"Data quality score: {self.data_quality_report['data_quality_score']:.1f}/100"
+                )
+
+                logger.info(f"Data loaded successfully. Final shape: {self.df.shape}")
+
+            except FileNotFoundError:
+                logger.error(f"Data file not found: {self.data_path}")
+                raise
+            except Exception as e:
+                logger.error(f"Error loading data: {str(e)}")
+                raise
+
         return self.df
 
     def get_data_summary(self) -> str:
@@ -106,86 +143,197 @@ Dataset Overview:
         return result
 
     def _perform_analysis(self, df: pd.DataFrame, task: str) -> str:
-        """Perform quantitative analysis based on task.
+        """Perform comprehensive baseline vs current analysis.
 
         Args:
             df: DataFrame to analyze
             task: Task description
 
         Returns:
-            String with analysis results
+            String with detailed baseline/current comparisons
         """
         analysis = []
 
-        # Time-based analysis
-        if "roas" in task.lower() or "drop" in task.lower() or "change" in task.lower():
-            # Compare recent vs previous period
+        try:
+            logger.info("Starting performance analysis with baseline comparisons")
+
+            # Define time periods
             max_date = df["date"].max()
-            last_7_days = df[df["date"] > max_date - timedelta(days=7)]
-            prev_7_days = df[
-                (df["date"] <= max_date - timedelta(days=7))
-                & (df["date"] > max_date - timedelta(days=14))
-            ]
+            current_start = max_date - timedelta(days=7)
+            baseline_start = max_date - timedelta(days=14)
+            baseline_end = max_date - timedelta(days=7)
 
-            if len(last_7_days) > 0 and len(prev_7_days) > 0:
-                recent_roas = (
-                    last_7_days["revenue"].sum() / last_7_days["spend"].sum()
-                    if last_7_days["spend"].sum() > 0
-                    else 0
-                )
-                prev_roas = (
-                    prev_7_days["revenue"].sum() / prev_7_days["spend"].sum()
-                    if prev_7_days["spend"].sum() > 0
-                    else 0
-                )
+            current_period = df[df["date"] > current_start]
+            baseline_period = df[(df["date"] > baseline_start) & (df["date"] <= baseline_end)]
 
-                roas_change = (
-                    (recent_roas - prev_roas) / prev_roas * 100 if prev_roas > 0 else 0
-                )
+            analysis.append("=" * 60)
+            analysis.append("BASELINE vs CURRENT PERFORMANCE COMPARISON")
+            analysis.append("=" * 60)
+            analysis.append(f"Baseline Period: {baseline_start.date()} to {baseline_end.date()}")
+            analysis.append(f"Current Period: {current_start.date()} to {max_date.date()}")
+            analysis.append("")
 
-                analysis.append(
-                    f"ROAS Trend:\n- Last 7 days: {recent_roas:.2f}\n- Previous 7 days: {prev_roas:.2f}\n- Change: {roas_change:+.1f}%"
-                )
+            # Overall metrics comparison
+            analysis.append("--- OVERALL METRICS ---")
+            analysis.extend(
+                self._compare_periods(baseline_period, current_period, "Overall")
+            )
 
-        # CTR analysis
-        if "ctr" in task.lower() or "click" in task.lower():
+            # Campaign-level analysis
+            analysis.append("\n--- TOP 5 CAMPAIGNS (by spend) ---")
+            top_campaigns = (
+                df.groupby("campaign_name")["spend"]
+                .sum()
+                .sort_values(ascending=False)
+                .head(5)
+                .index
+            )
+
+            for campaign in top_campaigns:
+                baseline_camp = baseline_period[baseline_period["campaign_name"] == campaign]
+                current_camp = current_period[current_period["campaign_name"] == campaign]
+
+                if len(baseline_camp) > 0 and len(current_camp) > 0:
+                    analysis.append(f"\nCampaign: {campaign}")
+                    analysis.extend(
+                        self._compare_periods(baseline_camp, current_camp, campaign, indent=2)
+                    )
+
+            # Creative type analysis
+            analysis.append("\n--- CREATIVE TYPE PERFORMANCE ---")
+            for creative_type in df["creative_type"].unique():
+                baseline_creative = baseline_period[baseline_period["creative_type"] == creative_type]
+                current_creative = current_period[current_period["creative_type"] == creative_type]
+
+                if len(baseline_creative) > 10 and len(current_creative) > 10:
+                    analysis.append(f"\n{creative_type}:")
+                    analysis.extend(
+                        self._compare_periods(
+                            baseline_creative, current_creative, creative_type, indent=2
+                        )
+                    )
+
+            # Platform analysis
+            analysis.append("\n--- PLATFORM PERFORMANCE ---")
+            for platform in df["platform"].unique():
+                baseline_platform = baseline_period[baseline_period["platform"] == platform]
+                current_platform = current_period[current_period["platform"] == platform]
+
+                if len(baseline_platform) > 0 and len(current_platform) > 0:
+                    analysis.append(f"\n{platform}:")
+                    analysis.extend(
+                        self._compare_periods(
+                            baseline_platform, current_platform, platform, indent=2
+                        )
+                    )
+
+            # Low performers (current period)
+            analysis.append("\n--- LOW PERFORMING CAMPAIGNS (Current Period) ---")
             low_ctr_threshold = self.config["thresholds"]["low_ctr_threshold"]
             low_ctr_campaigns = (
-                df[df["ctr"] < low_ctr_threshold]
+                current_period[current_period["ctr"] < low_ctr_threshold]
                 .groupby("campaign_name")
-                .agg({"ctr": "mean", "spend": "sum", "impressions": "sum"})
+                .agg(
+                    {
+                        "ctr": "mean",
+                        "roas": "mean",
+                        "spend": "sum",
+                        "impressions": "sum",
+                    }
+                )
                 .sort_values("spend", ascending=False)
                 .head(5)
             )
 
             if len(low_ctr_campaigns) > 0:
                 analysis.append(
-                    f"\nLow CTR Campaigns (<{low_ctr_threshold}):\n{low_ctr_campaigns.to_string()}"
+                    f"\nCampaigns with CTR < {low_ctr_threshold}:"
                 )
+                analysis.append(low_ctr_campaigns.to_string())
 
-        # Creative performance
-        creative_perf = (
-            df.groupby("creative_type")
-            .agg({"roas": "mean", "ctr": "mean", "spend": "sum"})
-            .sort_values("roas", ascending=False)
-        )
-        analysis.append(f"\nCreative Type Performance:\n{creative_perf.to_string()}")
+            logger.info("Performance analysis complete")
 
-        # Top and bottom performers
-        campaign_perf = (
-            df.groupby("campaign_name")
-            .agg({"roas": "mean", "ctr": "mean", "spend": "sum", "revenue": "sum"})
-            .sort_values("roas", ascending=False)
-        )
-
-        analysis.append(
-            f"\nTop 3 Campaigns by ROAS:\n{campaign_perf.head(3).to_string()}"
-        )
-        analysis.append(
-            f"\nBottom 3 Campaigns by ROAS:\n{campaign_perf.tail(3).to_string()}"
-        )
+        except Exception as e:
+            logger.error(f"Error in performance analysis: {str(e)}")
+            analysis.append(f"\n[ERROR] Analysis failed: {str(e)}")
 
         return "\n".join(analysis)
+
+    def _compare_periods(
+        self,
+        baseline: pd.DataFrame,
+        current: pd.DataFrame,
+        segment_name: str,
+        indent: int = 0,
+    ) -> List[str]:
+        """Compare two time periods with detailed metrics.
+
+        Args:
+            baseline: Baseline period data
+            current: Current period data
+            segment_name: Name of segment being compared
+            indent: Indentation level
+
+        Returns:
+            List of formatted comparison strings
+        """
+        indent_str = "  " * indent
+        lines = []
+
+        try:
+            if len(baseline) == 0 or len(current) == 0:
+                lines.append(f"{indent_str}Insufficient data for comparison")
+                return lines
+
+            # Calculate metrics for both periods
+            metrics = {
+                "ROAS": (
+                    baseline["revenue"].sum() / baseline["spend"].sum()
+                    if baseline["spend"].sum() > 0
+                    else 0,
+                    current["revenue"].sum() / current["spend"].sum()
+                    if current["spend"].sum() > 0
+                    else 0,
+                ),
+                "CTR": (baseline["ctr"].mean(), current["ctr"].mean()),
+                "Spend": (baseline["spend"].sum(), current["spend"].sum()),
+                "Revenue": (baseline["revenue"].sum(), current["revenue"].sum()),
+                "Impressions": (
+                    baseline["impressions"].sum(),
+                    current["impressions"].sum(),
+                ),
+            }
+
+            # Calculate and format deltas
+            for metric_name, (baseline_val, current_val) in metrics.items():
+                if baseline_val > 0:
+                    absolute_delta = current_val - baseline_val
+                    relative_delta_pct = (absolute_delta / baseline_val) * 100
+
+                    # Format based on metric type
+                    if metric_name in ["ROAS", "CTR"]:
+                        lines.append(
+                            f"{indent_str}{metric_name}: {baseline_val:.4f} → {current_val:.4f} "
+                            f"(Δ {absolute_delta:+.4f}, {relative_delta_pct:+.1f}%)"
+                        )
+                    else:
+                        lines.append(
+                            f"{indent_str}{metric_name}: ${baseline_val:,.0f} → ${current_val:,.0f} "
+                            f"(Δ ${absolute_delta:+,.0f}, {relative_delta_pct:+.1f}%)"
+                        )
+                else:
+                    lines.append(
+                        f"{indent_str}{metric_name}: N/A → {current_val:.2f} (new data)"
+                    )
+
+            # Sample size
+            lines.append(f"{indent_str}Sample Size: {len(baseline)} → {len(current)}")
+
+        except Exception as e:
+            logger.error(f"Error comparing periods for {segment_name}: {str(e)}")
+            lines.append(f"{indent_str}[ERROR] Comparison failed: {str(e)}")
+
+        return lines
 
     def get_low_ctr_campaigns(self) -> pd.DataFrame:
         """Get campaigns with low CTR.

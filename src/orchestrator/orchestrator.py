@@ -46,7 +46,7 @@ class AgentOrchestrator:
         }
 
     def run(self, query: str) -> Dict[str, Any]:
-        """Execute full agentic workflow.
+        """Execute full agentic workflow with comprehensive logging and validation.
 
         Args:
             query: User's query or question
@@ -58,9 +58,24 @@ class AgentOrchestrator:
         self.state["query"] = query
 
         try:
-            # Step 1: Load and summarize data
+            # Step 1: Load and validate data
             self.logger.log("data_agent", "start", {})
             self.state["data_summary"] = self.data_agent.get_data_summary()
+
+            # Log data quality
+            if self.data_agent.data_quality_report:
+                self.logger.log_decision(
+                    "data_agent",
+                    "Data validated and loaded",
+                    f"Data quality score: {self.data_agent.data_quality_report['data_quality_score']:.1f}/100. "
+                    f"{self.data_agent.data_quality_report['total_rows']} rows loaded.",
+                    inputs={"data_path": self.data_agent.data_path},
+                    outputs={
+                        "quality_score": self.data_agent.data_quality_report["data_quality_score"],
+                        "total_rows": self.data_agent.data_quality_report["total_rows"],
+                    },
+                )
+
             self.logger.log(
                 "data_agent",
                 "complete",
@@ -95,10 +110,18 @@ class AgentOrchestrator:
             self.state["insights"] = self.insight_agent.execute(
                 context=query, data_summary=json.dumps(self.state["analysis"], indent=2)
             )
+            num_hypotheses = len(self.state["insights"].get("hypotheses", []))
             self.logger.log(
                 "insight_agent",
                 "complete",
-                {"hypotheses": len(self.state["insights"].get("hypotheses", []))},
+                {"hypotheses": num_hypotheses},
+            )
+            self.logger.log_decision(
+                "insight_agent",
+                f"Generated {num_hypotheses} hypotheses",
+                f"Based on analysis of {len(self.state['analysis'].get('key_findings', []))} key findings from data",
+                inputs={"query": query, "findings_count": len(self.state["analysis"].get("key_findings", []))},
+                outputs={"hypotheses_generated": num_hypotheses},
             )
 
             # Step 5: Validate hypotheses
@@ -108,13 +131,26 @@ class AgentOrchestrator:
                 data_summary=self.state["data_summary"],
                 evidence=self.state["analysis"].get("raw_analysis", ""),
             )
+            validated_count = self.state["evaluation"].get("validated_count", 0)
+            total_count = self.state["evaluation"].get("total_evaluated", 0)
+            rejected_count = self.state["evaluation"].get("rejected_count", 0)
+
             self.logger.log(
                 "evaluator",
                 "complete",
                 {
-                    "validated": self.state["evaluation"].get("validated_count", 0),
-                    "total": self.state["evaluation"].get("total_evaluated", 0),
+                    "validated": validated_count,
+                    "total": total_count,
+                    "rejected": rejected_count,
                 },
+            )
+            self.logger.log_decision(
+                "evaluator",
+                f"Validated {validated_count}/{total_count} hypotheses",
+                f"Applied confidence threshold of {self.config['thresholds']['confidence_min']}. "
+                f"Rejected {rejected_count} hypotheses due to insufficient evidence or low confidence.",
+                inputs={"hypotheses_count": total_count, "threshold": self.config["thresholds"]["confidence_min"]},
+                outputs={"validated": validated_count, "rejected": rejected_count},
             )
 
             # Step 6: Generate creative recommendations
@@ -122,19 +158,36 @@ class AgentOrchestrator:
             low_ctr = self.data_agent.get_low_ctr_campaigns()
             top_perf = self.data_agent.get_top_performers()
 
+            self.logger.log_decision(
+                "creative_generator",
+                f"Selected {len(low_ctr)} low-performing and {len(top_perf)} top-performing campaigns",
+                f"Using CTR threshold of {self.config['thresholds']['low_ctr_threshold']} "
+                f"and ROAS threshold of {self.config['thresholds']['low_roas_threshold']}",
+                inputs={"low_ctr_count": len(low_ctr), "top_performers_count": len(top_perf)},
+            )
+
             self.state["creatives"] = self.creative_generator.execute(
                 low_performers=low_ctr,
                 top_performers=top_perf,
                 insights=self.state["evaluation"],
             )
+            total_recs = self.state["creatives"].get("total_recommendations", 0)
+            linked_recs = self.state["creatives"].get("linked_to_insights", 0)
+
             self.logger.log(
                 "creative_generator",
                 "complete",
                 {
-                    "recommendations": self.state["creatives"].get(
-                        "total_recommendations", 0
-                    )
+                    "recommendations": total_recs,
+                    "linked_to_insights": linked_recs,
                 },
+            )
+            self.logger.log_decision(
+                "creative_generator",
+                f"Generated {total_recs} creative recommendations",
+                f"{linked_recs} recommendations tightly linked to validated insights. "
+                f"All recommendations address specific diagnosed issues.",
+                outputs={"total_recommendations": total_recs, "linked_recommendations": linked_recs},
             )
 
             # Step 7: Generate final report

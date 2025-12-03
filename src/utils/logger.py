@@ -244,6 +244,35 @@ class Logger:
         """
         return self.logs
 
+    def log_decision(
+        self,
+        agent: str,
+        decision: str,
+        reasoning: str,
+        inputs: Optional[Dict] = None,
+        outputs: Optional[Dict] = None,
+    ):
+        """Log an agent decision with reasoning (for observability).
+
+        Args:
+            agent: Agent name
+            decision: What decision was made
+            reasoning: Why this decision was made
+            inputs: Optional input data summary
+            outputs: Optional output data summary
+        """
+        data = {
+            "decision": decision,
+            "reasoning": reasoning,
+        }
+
+        if inputs:
+            data["inputs"] = inputs
+        if outputs:
+            data["outputs"] = outputs
+
+        self.log(agent, "decision", data, level="INFO")
+
     def get_summary_stats(self) -> Dict[str, Any]:
         """Get summary statistics for this session.
 
@@ -256,6 +285,7 @@ class Logger:
             "agents": list(set(log["agent"] for log in self.logs)),
             "errors": [log for log in self.logs if log.get("level") == "ERROR"],
             "warnings": [log for log in self.logs if log.get("level") == "WARNING"],
+            "decisions": [log for log in self.logs if log.get("event") == "decision"],
             "total_duration_ms": sum(log.get("duration_ms", 0) for log in self.logs),
         }
 
